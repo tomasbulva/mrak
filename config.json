@@ -1,0 +1,14 @@
+{
+    "https-port" : 8080,
+    "http-port" : 8070,
+    "security": {
+        "tokenLife" : 2216000
+    },
+    "mongoose": {
+        "uri": "mongodb://localhost/mrak0"
+    },
+    "filesystem": {
+    	"system": "local",
+    	"uploadDir": "uploads"
+    }
+}

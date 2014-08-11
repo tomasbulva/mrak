@@ -1,0 +1,18 @@
+{"level":"error","message":"no token found!","timestamp":"2014-08-07T20:14:02.490Z"}
+{"level":"error","message":"Error, User directory not created","timestamp":"2014-08-11T15:02:15.384Z"}
+{"level":"error","message":"Error, File directory not created","timestamp":"2014-08-11T15:21:06.113Z"}
+{"level":"error","message":"Error, User directory not created","timestamp":"2014-08-11T15:24:33.466Z"}
+{"level":"error","message":"Error, File directory not created","timestamp":"2014-08-11T15:38:24.388Z"}
+{"level":"error","message":"true","timestamp":"2014-08-11T16:42:51.233Z"}
+{"level":"error","message":"true","timestamp":"2014-08-11T16:44:36.238Z"}
+{"level":"error","message":"true","timestamp":"2014-08-11T16:50:40.962Z"}
+{"level":"error","message":"true","timestamp":"2014-08-11T16:59:26.188Z"}
+{"level":"error","message":"fileLib.currFileLogistics Path callback Error  true","timestamp":"2014-08-11T17:00:05.000Z"}
+{"level":"error","message":"fileLib.currFileLogistics Path callback Error  true","timestamp":"2014-08-11T17:01:47.753Z"}
+{"level":"error","message":"fileLib.currFileLogistics Path callback Error  true","timestamp":"2014-08-11T17:07:38.522Z"}
+{"level":"error","message":"fileLib.currFileLogistics Path callback Error  true","timestamp":"2014-08-11T17:10:40.446Z"}
+{"level":"error","message":"fileLib.currFileLogistics Path callback Error  true","timestamp":"2014-08-11T20:31:02.024Z"}
+{"errno":47,"code":"EEXIST","path":"/Users/tomasbulva/Dropbox/apollo/mrak/uploads/53dfd9d01bd00c1bfad15fbe","level":"error","message":"fileLib.currFileLogistics Path callback Error ","timestamp":"2014-08-11T20:31:02.037Z"}
+{"message":"writeFileInfoDB Error: ","name":"ValidationError","errors":{"meta.hash":{"message":"Path `meta.hash` is required.","name":"ValidatorError","path":"meta.hash","type":"required"}},"level":"error","timestamp":"2014-08-11T21:25:58.997Z"}
+{"message":"writeFileInfoDB Error: ","name":"ValidationError","errors":{"meta.hash":{"message":"Path `meta.hash` is required.","name":"ValidatorError","path":"meta.hash","type":"required"}},"level":"error","timestamp":"2014-08-11T21:26:21.479Z"}
+{"message":"writeFileInfoDB Error: ","name":"ValidationError","errors":{"meta.hash":{"message":"Path `meta.hash` is required.","name":"ValidatorError","path":"meta.hash","type":"required"}},"level":"error","timestamp":"2014-08-11T21:29:33.906Z"}
