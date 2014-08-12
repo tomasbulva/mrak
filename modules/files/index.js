@@ -7,18 +7,15 @@ var util 			= require('util');
 var Files 			= require("./model");
 var userController 	= require("../user");
 var fileLib      	= require('./lib');
+var Versions 		= require("../versions/model");
 var utilities 		= require("../utilities");
 var log 			= utilities.iLog(module);
 
 module.exports = {
     get: function(id, callback) {
         console.log("get");
-        // User.findOne(id, function(err, user) {
-        //    callback(err, user);
-        // });
     },
     create: function(req, callback) {
-     	//app.use(busboy());
      	log.debug('create file object reached');
      	var fstream;
      	var filedescription;
@@ -36,9 +33,6 @@ module.exports = {
      	var finalBuffer;
 
      	var finalResult;
-
-
-	    
 
 	    async.series([
 	    	function getUserId(cb){
@@ -85,16 +79,16 @@ module.exports = {
 	    			async.series([
 	    				function(cb){
 	    					fileLib.currUserDirCheck(currUserId,function(exists){
-	    						log.debug(exists ? "it's there" : "is not there!");
+	    						log.debug(exists ? "currUserDirCheck %s dir it's there" : "currUserDirCheck %s dir is not there!",currUserId);
 	    						if(!exists){
-	    							log.debug("createFileStruct: User directory %s doesn't exist we'll try to create it", currUserId);
+	    							log.debug("createFileStruct: Creating User directory %s ", currUserId);
 									fileLib.currUserDirCreate(currUserId,function(result){
-										if(result === undefined){
+										log.debug("createFileStruct: result ", util.inspect(result, { showHidden: true, depth: null }));
+										if(result === undefined || result === null ){
 											log.debug("createFileStruct: User directory created!");
 											cb();
 										}
 									});
-									cb();
 	    						}else{
 	    							log.debug("createFileStruct: User directory %s exists", currUserId);
 									cb();
@@ -103,11 +97,11 @@ module.exports = {
 						},
 						function(cb){
 							fileLib.currFileCheck(currUserId,origFileName,function(exists){
-								log.debug(exists ? "it's there" : "is not there!");
+								log.debug(exists ? "currFileCheck %s dir it's there" : "currFileCheck %s dir is not there!", origFileName);
 								if(!exists){
-									log.debug("createFileStruct: File directory %s doesn't exist we'll try to create it",origFileName);
+									log.debug("createFileStruct: Creating File directory %s ",origFileName);
 									fileLib.currFileDirCreate(currUserId,origFileName,function(result){
-										if(result === undefined){
+										if(result === undefined || result === null){
 											log.debug("createFileStruct: File directory created!");
 											cb();
 										}
@@ -151,44 +145,105 @@ module.exports = {
 					}
 					// created: auto populated [default: now]
 				}
-
-				//console.dir(filedescription);
 				cb();
 
 	    	},
 	    	function parallelStoreAction(cb) {
             	async.parallel([
             		function writeFileToDest(cb){
-						var fstream = fs.createWriteStream(wholeFilePath);
-
-			    		//theFile.pipe(fstream);
-			    		fstream.write(finalBuffer);
-
-			    		fstream.on('error', function(err) {
-				        	log.error('fstream error: ',err);
-				        });
-
-				        fstream.on('close', function() {
-							cb();
-				        });
-			    	},
-			    	function writeFileInfoDB(cb){
-			    		var fileinfo = new Files();
-			    		fileinfo = ___.extend(fileinfo,filedescription)
-			            fileinfo.save(function(err, filedeeds) {
-							finalResult = filedeeds;
-							if(err) log.error("writeFileInfoDB Error: ", err);
-							//log.debug("writeFileInfoDB: ",filedeeds, util.inspect(filedeeds, { showHidden: true, depth: null }));
-							cb();
-							//callback(err, filedeeds);
+						log.debug("writeFileToDest begining");
+			    		fs.open(wholeFilePath, 'w', function(err, fd) {
+						    if (err) {
+						        log.error('fstream error: ',err);
+						    } else {
+						        fs.write(fd, finalBuffer, 0, finalBuffer.length, null, function(err) {
+							        if (err) log.error('fstream error: ',err);
+									fs.close(fd, function() {
+							            log.debug("writeFileToDest fstream on close");
+										cb();
+							        });
+							    });
+						    }
 						});
+			    	},
+			    	function writeToDBs(cb){
+			    		async.series([
+			    			function writeFileInfoDB(cb){
+					    		var fileinfo = new Files();
+					    		fileinfo = ___.extend(fileinfo,filedescription)
+					            fileinfo.save(function(err, filedeeds) {
+									finalResult = filedeeds;
+									if(err) log.error("writeFileInfoDB Error: \n", err);
+									log.debug("writeFileInfoDB File success: \n",filedeeds, util.inspect(filedeeds, { showHidden: true, depth: null }));
+									cb();
+								});
+					    	},
+					    	function writeVersionInfoDB(cb){
+					    		var readingDBResult;
+
+					    		async.series([
+					    			function readVersions(cb){
+					    				var query = {
+							    			origFileName: finalResult.filenameOrig, 
+							    			virtualPath: finalResult.virtualPath,
+							    			owner: finalResult.users.owner
+							    		}
+
+							    		log.debug("writeVersionInfoDB readVersions query: \n",util.inspect(query, { showHidden: true, depth: null }));
+
+							    		Versions.findOne(query, function returnVersions(err,verInfo){ 
+							    			if(err) log.error("writeVersionInfoDB readVersions error: \n",err);
+							    			log.debug("writeVersionInfoDB readVersions success: \n",util.inspect(verInfo, { showHidden: true, depth: null }));
+							    			readingDBResult = verInfo;
+							    			cb();
+							    		});
+					    			},
+					    			function writeVersions(cb){
+					    				
+										var versions          = new Versions();
+										versions.owner     	  = currUserId;
+										versions.origFileName = finalResult.filenameOrig;
+										versions.virtualPath  = finalResult.virtualPath;
+										
+
+					    				if(readingDBResult == null){
+					    					//there is no existing versions record for current file owned by current user at this path
+					    					versions.versions = [{fileid:finalResult.id,cDate:finalResult.created}];
+					    					versions.save(function writeVersionsSaveCb1(err,result){
+					    						if(err) log.error("writeVersionInfoDB writeVersions write new:  error: \n",err);
+					    						cb();
+					    					});
+					    				}else{
+					    					
+					    					var query = {
+												origFileName: finalResult.filenameOrig, 
+												virtualPath: finalResult.virtualPath,
+												owner: finalResult.users.owner._id
+								    		};
+
+								    		readingDBResult.versions.unshift({fileid:finalResult.id,cDate:finalResult.created});
+
+								    		log.debug("writeVersionInfoDB writeVersions: \n",util.inspect(readingDBResult.versions, { showHidden: true, depth: null }));
+
+								    		log.debug("writeVersionInfoDB writeVersions findOneAndUpdate query: \n",util.inspect(query, { showHidden: true, depth: null }));
+
+
+					    					Versions.findOneAndUpdate(query, { versions: readingDBResult.versions },function versionUpdateCb(err,result){
+					    						if(err) log.error("writeVersionInfoDB writeVersions update:  error: ",err);
+					    						cb();
+					    					});
+					    				}
+					    			}
+								],cb);
+					    	}
+			    		],cb)
 			    	}
             	],cb);
             }],
             function onFileCreateEnd(err,result){
             	log.debug("onFileCreateEnd: \n",util.inspect(finalResult, { showHidden: true, depth: null }));
-            	//console.dir(finalResult);
-            	callback(err,true);
+            	log.debug("onFileCreateEnd")
+            	callback(err,filedescription);
             }
 	    );
     }    

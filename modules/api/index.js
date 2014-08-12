@@ -21,6 +21,7 @@ app.post('/file/upload', auth.authorise, function(req, res, next) {
     log.debug("api/index > file create");
     files.create(req, function createFileCb(err, file) {
         if(err) log.error("api/index > file create Error ", err);
+        log.debug("api/index > file success ", file);
         utilities.globalHeaders(res); //X-Powered-By
         res.json(file); // return user json if ok
     });

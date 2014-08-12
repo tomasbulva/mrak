@@ -10,5 +10,9 @@
     "filesystem": {
     	"system": "local",
     	"uploadDir": "uploads"
+    },
+    "versions": {
+    	"basic": 10,
+    	"pro": 100
     }
 }

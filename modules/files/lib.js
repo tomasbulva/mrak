@@ -44,66 +44,42 @@ module.exports = {
 		// Create new file folder.
 		var path = module.exports.currFileDir(currUserID,currFileNameOrig);
 		fs.mkdir(path,cb);
-	},
-	currFileLogistics: function(currUserID,currFileNameOrig,callback){
-		// Set of tests and operations to write each file.
-		var m = module.exports;
-
-		async.series([
-			function(cb){
-				if(!m.currUserDirCheck(currUserID,cb)){
-					log.debug("User directory %s doesn't exist we'll try to create it", currUserID);
-					m.currUserDirCreate(currUserID,cb);
-					cb();
-				}
-				else{
-					log.debug("User directory %s exists", currUserID);
-					cb();
-				}
-			},
-			function(cb){
-				if(!m.currFileCheck(currUserID,currFileNameOrig,cb)){
-					log.debug("File directory %s doesn't exist we'll try to create it",currFileNameOrig);
-					m.currFileDirCreate(currUserID,currFileNameOrig,cb);
-					cb();
-				}else{
-					log.debug("File directory %s exists",currFileNameOrig);
-					cb();
-				}
-			}],
-			function(err){
-				//finishing the series
-				//if(err) log.error(err);
-
-				var path = m.currFileDir(currUserID,currFileNameOrig);
-				log.info("User and File directory %s is created",path);
-				callback(err,path);
-			});
-
-
-		// if(!){
-		// 	log.debug("User directory %s doesn't exist we'll try to create it", currUserID);
-		// 	createDir = m.currUserDirCreate(currUserID);
-		// 	log.debug("createDir ",createDir);
-		// 	if(createDir !== undefined){
-		// 		log.error("Error, User directory not created");
-		// 		return false;
-		// 	}else{
-		// 		log.debug("User directory %s should be created", currUserID);
-		// 	}
-		// }else if(!m.currFileCheck(currUserID,currFileNameOrig)){
-		// 	log.debug("File directory %s doesn't exist we'll try to create it",currFileNameOrig);
-		// 	if(m.currFileDirCreate(currUserID,currFileNameOrig) !== undefined){
-		// 		log.error("Error, File directory not created");
-		// 		return false;
-		// 	}else{
-		// 		log.debug("File directory %s should be created", currFileNameOrig);
-		// 	}
-		// }else{
-		// 	var path = m.currFileDir(currUserID,currFileNameOrig);
-		// 	log.info("User and File directory %s is created",path);
-		// 	return path;
-		// }
 	}
+	// ,
+	// currFileLogistics: function(currUserID,currFileNameOrig,callback){
+	// 	// Set of tests and operations to write each file.
+	// 	var m = module.exports;
+
+	// 	async.series([
+	// 		function(cb){
+	// 			if(!m.currUserDirCheck(currUserID,cb)){
+	// 				log.debug("User directory %s doesn't exist we'll try to create it", currUserID);
+	// 				m.currUserDirCreate(currUserID,cb);
+	// 				cb();
+	// 			}
+	// 			else{
+	// 				log.debug("User directory %s exists", currUserID);
+	// 				cb();
+	// 			}
+	// 		},
+	// 		function(cb){
+	// 			if(!m.currFileCheck(currUserID,currFileNameOrig,cb)){
+	// 				log.debug("File directory %s doesn't exist we'll try to create it",currFileNameOrig);
+	// 				m.currFileDirCreate(currUserID,currFileNameOrig,cb);
+	// 				cb();
+	// 			}else{
+	// 				log.debug("File directory %s exists",currFileNameOrig);
+	// 				cb();
+	// 			}
+	// 		}],
+	// 		function(err){
+	// 			//finishing the series
+	// 			//if(err) log.error(err);
+
+	// 			var path = m.currFileDir(currUserID,currFileNameOrig);
+	// 			log.info("User and File directory %s is created",path);
+	// 			callback(err,path);
+	// 		});
+	// }
 
 }

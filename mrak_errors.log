@@ -16,3 +16,19 @@
 {"message":"writeFileInfoDB Error: ","name":"ValidationError","errors":{"meta.hash":{"message":"Path `meta.hash` is required.","name":"ValidatorError","path":"meta.hash","type":"required"}},"level":"error","timestamp":"2014-08-11T21:25:58.997Z"}
 {"message":"writeFileInfoDB Error: ","name":"ValidationError","errors":{"meta.hash":{"message":"Path `meta.hash` is required.","name":"ValidatorError","path":"meta.hash","type":"required"}},"level":"error","timestamp":"2014-08-11T21:26:21.479Z"}
 {"message":"writeFileInfoDB Error: ","name":"ValidationError","errors":{"meta.hash":{"message":"Path `meta.hash` is required.","name":"ValidatorError","path":"meta.hash","type":"required"}},"level":"error","timestamp":"2014-08-11T21:29:33.906Z"}
+{"level":"error","message":"writeVersionInfoDB readVersions error: ","timestamp":"2014-08-12T04:21:33.766Z"}
+{"level":"error","message":"writeVersionInfoDB readVersions error: ","timestamp":"2014-08-12T04:22:20.767Z"}
+{"level":"error","message":"writeVersionInfoDB readVersions error: ","timestamp":"2014-08-12T14:25:19.226Z"}
+{"level":"error","message":"writeVersionInfoDB readVersions error: ","timestamp":"2014-08-12T14:30:17.840Z"}
+{"level":"error","message":"writeVersionInfoDB readVersions error: ","timestamp":"2014-08-12T15:00:29.238Z"}
+{"level":"error","message":"writeVersionInfoDB readVersions error: ","timestamp":"2014-08-12T15:32:12.376Z"}
+{"level":"error","message":"writeVersionInfoDB readVersions error: ","timestamp":"2014-08-12T15:33:37.793Z"}
+{"level":"error","message":"writeVersionInfoDB writeVersions write new:  error: ","timestamp":"2014-08-12T15:33:37.794Z"}
+{"level":"error","message":"writeVersionInfoDB readVersions error: ","timestamp":"2014-08-12T15:39:00.522Z"}
+{"level":"error","message":"writeVersionInfoDB readVersions error: ","timestamp":"2014-08-12T15:58:37.078Z"}
+{"level":"error","message":"writeVersionInfoDB readVersions error: ","timestamp":"2014-08-12T15:59:04.184Z"}
+{"level":"error","message":"writeVersionInfoDB readVersions error: \n","timestamp":"2014-08-12T16:03:03.294Z"}
+{"level":"error","message":"writeVersionInfoDB readVersions error: \n","timestamp":"2014-08-12T16:04:59.540Z"}
+{"level":"error","message":"writeVersionInfoDB readVersions error: \n","timestamp":"2014-08-12T16:05:57.346Z"}
+{"level":"error","message":"writeVersionInfoDB readVersions error: \n","timestamp":"2014-08-12T16:06:16.801Z"}
+{"level":"error","message":"writeVersionInfoDB readVersions error: \n","timestamp":"2014-08-12T16:08:19.696Z"}
