@@ -32,3 +32,4 @@
 {"level":"error","message":"writeVersionInfoDB readVersions error: \n","timestamp":"2014-08-12T16:05:57.346Z"}
 {"level":"error","message":"writeVersionInfoDB readVersions error: \n","timestamp":"2014-08-12T16:06:16.801Z"}
 {"level":"error","message":"writeVersionInfoDB readVersions error: \n","timestamp":"2014-08-12T16:08:19.696Z"}
+{"message":"writeToDB writeFileUpdateCb file record lookup error: \n","name":"CastError","type":"ObjectId","value":"ObjectId(53dfd9d01bd00c1bfad15fbe)","path":"users.owner","level":"error","timestamp":"2014-08-12T22:37:27.321Z"}

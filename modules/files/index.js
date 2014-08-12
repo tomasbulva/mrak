@@ -7,7 +7,6 @@ var util 			= require('util');
 var Files 			= require("./model");
 var userController 	= require("../user");
 var fileLib      	= require('./lib');
-var Versions 		= require("../versions/model");
 var utilities 		= require("../utilities");
 var log 			= utilities.iLog(module);
 
@@ -15,7 +14,7 @@ module.exports = {
     getList: function(req, callback) {
         console.log("get");
         Files.find(function findAllFilesCb(){
-        	
+        	log.debug("createFileStruct: result ", util.inspect(result, { showHidden: true, depth: null }));
         });
     },
     create: function(req, callback) {
@@ -34,6 +33,7 @@ module.exports = {
      	var wholeFilePath;
      	var fileSize;
      	var finalBuffer;
+     	var virtualPathTmp = 'user/';
 
      	var finalResult;
 
@@ -132,9 +132,8 @@ module.exports = {
 	    		// file model
 				filedescription = { 
 					filenameOrig: origFileName,
-					filenameTmp: fileNameTmp,
 					filePath: structPath,
-					virtualPath: 'user/',
+					virtualPath: virtualPathTmp,
 					users: {
 						owner: currUserId,
 						sharee: null
@@ -169,64 +168,79 @@ module.exports = {
 						    }
 						});
 			    	},
-			    	function writeToDBs(cb){
-			    		async.series([
-			    			function writeFileInfoDB(cb){
-					    		var fileinfo = new Files();
-					    		fileinfo = ___.extend(fileinfo,filedescription)
-					            fileinfo.save(function(err, filedeeds) {
-									finalResult = filedeeds;
-									if(err) log.error("writeFileInfoDB Error: \n", err);
-									log.debug("writeFileInfoDB File success: \n",filedeeds, util.inspect(filedeeds, { showHidden: true, depth: null }));
-									cb();
-								});
-					    	},
-					    	function writeVersionInfoDB(cb){
-					    		var readingDBResult;
+			    	function writeToDB(cb){
+			    		// async.series([
+			    	// 		function writeFileInfoDB(cb){
+					   //  		var fileinfo = new Files();
+					   //  		fileinfo = ___.extend(fileinfo,filedescription)
+					   //          fileinfo.save(function(err, filedeeds) {
+								// 	finalResult = filedeeds;
+								// 	if(err) log.error("writeFileInfoDB Error: \n", err);
+								// 	log.debug("writeFileInfoDB File success: \n",filedeeds, util.inspect(filedeeds, { showHidden: true, depth: null }));
+								// 	cb();
+								// });
+					   //  	},
+					    	// function writeVersionInfoDB(cb){
+					    		//var readingDBResult;
 
+					    		// var query = {
+					    		// 	filenameOrig: origFileName, 
+					    		// 	virtualPath: virtualPathTmp,
+					    		// 	users: {
+					    		// 		owner: currUserId
+					    		// 	}
+					    		// }
 					    		var query = {
-					    			origFileName: finalResult.filenameOrig, 
-					    			virtualPath: finalResult.virtualPath,
-					    			owner: currUserId
+					    			"filenameOrig": origFileName, 
+					    			"virtualPath": virtualPathTmp,
+					    			"users.owner": currUserId
 					    		}
 
-					    		Versions.findOne(query, function(err, myversion) {
+					    		log.debug("writeToDB query: \n",util.inspect(query, { showHidden: true, depth: null }));
+
+					    		Files.findOne(query, function fileRecordFindOneCb(err, fileinfo) {
 								    if(!err) {
-								        if(!myversion) {
-								            var myversion          = new Versions();
-											myversion.owner     	  = currUserId;
-											myversion.origFileName = finalResult.filenameOrig;
-											myversion.virtualPath  = finalResult.virtualPath;
+
+								    	// file record doesn't exist yet, create new one
+								        if(!fileinfo) {
+											var fileinfo = new Files();
+					    					fileinfo = ___.extend(fileinfo,filedescription);
+					    					fileinfo.versions = [{
+								    			filenameTmp: fileNameTmp,
+								    			createDate: new Date()
+								    		}];
+								        }else{
+								        	fileinfo.versions.unshift({
+								    			filenameTmp: fileNameTmp,
+								    			createDate: new Date()
+								    		});
 								        }
 								        //contact.status = request.status;
 								        //myversions = readingDBResult.versions;
-							   			myversion.versions.unshift({
-							    			fileid: finalResult.id,
-							    			cDate: finalResult.created
-							    		});
+							   			
+								        //log.debug("writeToDB fileinfo: \n",util.inspect(fileinfo, { showHidden: true, depth: null }));
 
-
-								        myversion.save(function(err) {
+								        fileinfo.save(function writeFileUpdateCb(err) {
 								            if(!err) {
-								                log.debug("writeVersionInfoDB writeVersions versionUpdateCb success");
+								                log.debug("writeToDB writeFileUpdateCb success");
 								                cb();
 								            }
 								            else {
-								                log.debug("writeVersionInfoDB writeVersions versionUpdateCb error: \n", err);
+								                log.debug("writeToDB writeFileUpdateCb error: \n", err);
 								            }
 								        });
 								    }else{
-								    	log.error("writeVersionInfoDB writeVersions write new:  error: \n", err);
+								    	log.error("writeToDB writeFileUpdateCb file record lookup error: \n", err);
 								    }
 								});
-					    	}
-			    		],cb)
+					    	// }
+			    		// ],cb)
 			    	}
             	],cb);
             }],
             function onFileCreateEnd(err,result){
-            	log.debug("onFileCreateEnd: \n",util.inspect(finalResult, { showHidden: true, depth: null }));
-            	log.debug("onFileCreateEnd")
+            	//log.debug("onFileCreateEnd: \n",util.inspect(result, { showHidden: true, depth: null }));
+            	log.debug("onFileCreateEnd success")
             	callback(err,filedescription);
             }
 	    );

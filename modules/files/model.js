@@ -5,11 +5,6 @@ var fileSchema   = new Schema({
 		filenameOrig: {
 			type: String,
 			required: true
-		}, 
-		filenameTmp: {
-			type: String,
-			unique: true,
-			required: true
 		},
 		filePath: {
 			type: String,
@@ -31,10 +26,10 @@ var fileSchema   = new Schema({
 			}]
 		},
 		versions: [{
-			fileid: {
-				type: Schema.Types.ObjectId,
-				ref: 'File',
-				required: true 
+			filenameTmp: {
+				type: String,
+				unique: true,
+				required: true
 			},
 			createDate: {
 				type: Date,
