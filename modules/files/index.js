@@ -12,8 +12,11 @@ var utilities 		= require("../utilities");
 var log 			= utilities.iLog(module);
 
 module.exports = {
-    get: function(id, callback) {
+    getList: function(req, callback) {
         console.log("get");
+        Files.find(function findAllFilesCb(){
+        	
+        });
     },
     create: function(req, callback) {
      	log.debug('create file object reached');
@@ -181,60 +184,41 @@ module.exports = {
 					    	function writeVersionInfoDB(cb){
 					    		var readingDBResult;
 
-					    		async.series([
-					    			function readVersions(cb){
-					    				var query = {
-							    			origFileName: finalResult.filenameOrig, 
-							    			virtualPath: finalResult.virtualPath,
-							    			owner: finalResult.users.owner
-							    		}
+					    		var query = {
+					    			origFileName: finalResult.filenameOrig, 
+					    			virtualPath: finalResult.virtualPath,
+					    			owner: currUserId
+					    		}
 
-							    		log.debug("writeVersionInfoDB readVersions query: \n",util.inspect(query, { showHidden: true, depth: null }));
-
-							    		Versions.findOne(query, function returnVersions(err,verInfo){ 
-							    			if(err) log.error("writeVersionInfoDB readVersions error: \n",err);
-							    			log.debug("writeVersionInfoDB readVersions success: \n",util.inspect(verInfo, { showHidden: true, depth: null }));
-							    			readingDBResult = verInfo;
-							    			cb();
+					    		Versions.findOne(query, function(err, myversion) {
+								    if(!err) {
+								        if(!myversion) {
+								            var myversion          = new Versions();
+											myversion.owner     	  = currUserId;
+											myversion.origFileName = finalResult.filenameOrig;
+											myversion.virtualPath  = finalResult.virtualPath;
+								        }
+								        //contact.status = request.status;
+								        //myversions = readingDBResult.versions;
+							   			myversion.versions.unshift({
+							    			fileid: finalResult.id,
+							    			cDate: finalResult.created
 							    		});
-					    			},
-					    			function writeVersions(cb){
-					    				
-										var versions          = new Versions();
-										versions.owner     	  = currUserId;
-										versions.origFileName = finalResult.filenameOrig;
-										versions.virtualPath  = finalResult.virtualPath;
-										
-
-					    				if(readingDBResult == null){
-					    					//there is no existing versions record for current file owned by current user at this path
-					    					versions.versions = [{fileid:finalResult.id,cDate:finalResult.created}];
-					    					versions.save(function writeVersionsSaveCb1(err,result){
-					    						if(err) log.error("writeVersionInfoDB writeVersions write new:  error: \n",err);
-					    						cb();
-					    					});
-					    				}else{
-					    					
-					    					var query = {
-												origFileName: finalResult.filenameOrig, 
-												virtualPath: finalResult.virtualPath,
-												owner: finalResult.users.owner._id
-								    		};
-
-								    		readingDBResult.versions.unshift({fileid:finalResult.id,cDate:finalResult.created});
-
-								    		log.debug("writeVersionInfoDB writeVersions: \n",util.inspect(readingDBResult.versions, { showHidden: true, depth: null }));
-
-								    		log.debug("writeVersionInfoDB writeVersions findOneAndUpdate query: \n",util.inspect(query, { showHidden: true, depth: null }));
 
 
-					    					Versions.findOneAndUpdate(query, { versions: readingDBResult.versions },function versionUpdateCb(err,result){
-					    						if(err) log.error("writeVersionInfoDB writeVersions update:  error: ",err);
-					    						cb();
-					    					});
-					    				}
-					    			}
-								],cb);
+								        myversion.save(function(err) {
+								            if(!err) {
+								                log.debug("writeVersionInfoDB writeVersions versionUpdateCb success");
+								                cb();
+								            }
+								            else {
+								                log.debug("writeVersionInfoDB writeVersions versionUpdateCb error: \n", err);
+								            }
+								        });
+								    }else{
+								    	log.error("writeVersionInfoDB writeVersions write new:  error: \n", err);
+								    }
+								});
 					    	}
 			    		],cb)
 			    	}

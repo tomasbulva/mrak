@@ -1,3 +1,30 @@
+/*
+
+API overview
+=========================
++ already build
+- needs to be build
+~ stage two
+=========================
+
+* Files
++    /files/upload                  // file upload by current logged in user
++    /files/list                    // list all files
+-    /files/:file_id                // returns file data
+-    /files/search/:file_name       // file search
+
+* Users
++    /user/create                   // user sign up
++    /user/login            
++    /user/logout
++    /user/inf                      // logged in user info
+-    /user/:user_id                 // user info by ID      ? will need special admin privilage
+
+*/
+
+
+
+
 var files 		= require("../files");
 var user 		= require("../user");
 var auth        = require('../auth');
@@ -16,14 +43,24 @@ var app 		= module.exports = express(); // we export new express app here!
  *   Files
  *
  */
-app.use('/file/upload', busboy());
-app.post('/file/upload', auth.authorise, function(req, res, next) {
-    log.debug("api/index > file create");
-    files.create(req, function createFileCb(err, file) {
-        if(err) log.error("api/index > file create Error ", err);
-        log.debug("api/index > file success ", file);
+app.use('/files/upload', busboy());
+app.post('/files/upload', auth.authorise, function(req, res, next) {
+    log.debug("api/index > files create");
+    files.create(req, function createFilesCb(err, files) {
+        if(err) log.error("api/index > files upload Error ", err);
+        //log.debug("api/index > files upload success ", file);
         utilities.globalHeaders(res); //X-Powered-By
-        res.json(file); // return user json if ok
+        res.json(files); // return user json if ok
+    });
+});
+
+app.get('/files/list', auth.authorise, function(req, res, next) {
+    log.debug("api/index > files list");
+    files.getList(req, function getFilesCb(err, files) {
+        if(err) log.error("api/index > files list Error ", err);
+        //log.debug("api/index > files success ", file);
+        utilities.globalHeaders(res); //X-Powered-By
+        res.json(files); // return user json if ok
     });
 });
 
@@ -84,6 +121,7 @@ app.get('/user/logout', auth.authorise, function(req, res, next){
     });
 });
 
+// current user info
 app.get('/user/inf', auth.authorise, function(req, res, next){
     log.debug("api/index > user info");
     user.getUserByToken(req.headers.accesstoken,function(err,user){
@@ -92,3 +130,11 @@ app.get('/user/inf', auth.authorise, function(req, res, next){
         //console.dir(user);
     });
 });
+
+// id user info
+app.get('/user/:user_id/inf', auth.authorise, function(req, res, next){
+    log.debug("api/index > user id:%s info", req.params.user_id);
+});
+
+
+

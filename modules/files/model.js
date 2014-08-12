@@ -30,6 +30,17 @@ var fileSchema   = new Schema({
 		        	ref: 'User'
 			}]
 		},
+		versions: [{
+			fileid: {
+				type: Schema.Types.ObjectId,
+				ref: 'File',
+				required: true 
+			},
+			createDate: {
+				type: Date,
+				required: true 	
+			}
+		}],
 		meta: {
 			size: {
 				type: Number
