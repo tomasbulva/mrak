@@ -12,10 +12,104 @@ var log 			= utilities.iLog(module);
 
 module.exports = {
     getList: function(req, callback) {
-        console.log("get");
-        Files.find(function findAllFilesCb(){
-        	log.debug("createFileStruct: result ", util.inspect(result, { showHidden: true, depth: null }));
+        log.debug("file/index.js > getList");
+        Files.find({}).populate('users.owner').exec(function findAllFilesCb(err,result){
+        	if (err) log.error('findAllFilesCb error: \n',err);
+        	log.debug("findAllFilesCb: result ", util.inspect(result, { showHidden: true, depth: null }));
+        	
+        	var i = 0;
+        	cleanResult = [];
+        	___.each(result,function(value, key){
+        		if(value.isLive === true){
+	        		cleanResult[i] = {
+	        			fileName: value.filenameOrig,
+						fileOwner: value.users.owner.username,
+						resourceId: value.versions[0].id,
+						size: value.meta.size,
+						fileCreated: value.created,
+						fileModified: value.versions[0].created,
+						versionsTotal: value.versions.length
+	        		}
+	        		i++;
+        		}
+        	});
+
+        	callback(null,cleanResult);
         });
+    },
+    getFile: function(req, callback){
+    	//log.debug("file/index.js > getFile");
+    	//log.debug("req.params.id \n",util.inspect(req.params.id, { showHidden: true, depth: null }))
+    	var fileName;
+		var fileNameOrig;
+		var filePath;
+		var wholeFilePath;
+
+    	Files.findOne({"versions._id": req.params.id},function(err,result){
+    		//log.debug("Files.findOne result \n",util.inspect(result.versions[0].filenameTmp, { showHidden: true, depth: null }));
+    		
+    		if(!err){
+	    			if(!result){
+	    				Files.findOne({"_id": req.params.id},function(err,result){
+	    					if(result.isLive){
+		    					fileName = result.versions[0].filenameTmp;
+					    		fileNameOrig = result.filenameOrig;
+					    		filePath = result.filePath;
+					    		wholeFilePath = path.join(filePath, fileName);
+					    	}else{
+				    			callback({"writeHead":404},null, null);
+				    		}
+	    				});
+	    			}else{
+	    				if(result.isLive){
+							fileName = result.versions[0].filenameTmp;
+				    		fileNameOrig = result.filenameOrig;
+				    		filePath = result.filePath;
+				    		wholeFilePath = path.join(filePath, fileName);    				
+				    	}else{
+			    			callback({"writeHead":404},null, null);
+			    		}
+	    			}
+
+	    			callback(false,wholeFilePath, fileNameOrig);
+    		}else{
+    			log.error('getFile (by id: %s) error %s: ',req.params.id,err);
+    		}
+
+    	}); //findOne end
+
+    },
+    deleteFile: function(req, callback) {
+    	Files.findOne({"versions._id": req.params.id},function(err,fileinfo){
+			//log.debug("Files.findOne result \n",util.inspect(result.versions[0].filenameTmp, { showHidden: true, depth: null }));
+			
+			if(!err){
+	    			if(!fileinfo){
+	    				Files.findOne({"_id": req.params.id},function(err,fileinfo){
+	    					if(fileinfo.isLive){
+		    					fileinfo.isLive = false;
+					    	}else{
+				    			callback(false, {"writeHead":404});
+				    		}
+	    				});
+	    			}else{
+	    				if(fileinfo.isLive){
+							 fileinfo.isLive = false;			
+				    	}else{
+			    			callback(false, {"writeHead":404});
+			    		}
+	    			}
+	    			fileinfo.save(function fileDeleteUpdateCb(err){
+	    				if(!err) {
+			                log.debug("deleteFile fileDeleteUpdateCb success");
+			                callback(false,{"writeHead":200});
+			            }
+	    			});
+	    			
+			}else{
+				log.error('getFile (by id: %s) error %s: ',req.params.id,err);
+			}
+		});
     },
     create: function(req, callback) {
      	log.debug('create file object reached');
@@ -132,6 +226,7 @@ module.exports = {
 	    		// file model
 				filedescription = { 
 					filenameOrig: origFileName,
+					type: "file",
 					filePath: structPath,
 					virtualPath: virtualPathTmp,
 					users: {
@@ -169,34 +264,13 @@ module.exports = {
 						});
 			    	},
 			    	function writeToDB(cb){
-			    		// async.series([
-			    	// 		function writeFileInfoDB(cb){
-					   //  		var fileinfo = new Files();
-					   //  		fileinfo = ___.extend(fileinfo,filedescription)
-					   //          fileinfo.save(function(err, filedeeds) {
-								// 	finalResult = filedeeds;
-								// 	if(err) log.error("writeFileInfoDB Error: \n", err);
-								// 	log.debug("writeFileInfoDB File success: \n",filedeeds, util.inspect(filedeeds, { showHidden: true, depth: null }));
-								// 	cb();
-								// });
-					   //  	},
-					    	// function writeVersionInfoDB(cb){
-					    		//var readingDBResult;
-
-					    		// var query = {
-					    		// 	filenameOrig: origFileName, 
-					    		// 	virtualPath: virtualPathTmp,
-					    		// 	users: {
-					    		// 		owner: currUserId
-					    		// 	}
-					    		// }
 					    		var query = {
 					    			"filenameOrig": origFileName, 
 					    			"virtualPath": virtualPathTmp,
 					    			"users.owner": currUserId
 					    		}
 
-					    		log.debug("writeToDB query: \n",util.inspect(query, { showHidden: true, depth: null }));
+					    		//log.debug("writeToDB query: \n",util.inspect(query, { showHidden: true, depth: null }));
 
 					    		Files.findOne(query, function fileRecordFindOneCb(err, fileinfo) {
 								    if(!err) {
@@ -207,16 +281,23 @@ module.exports = {
 					    					fileinfo = ___.extend(fileinfo,filedescription);
 					    					fileinfo.versions = [{
 								    			filenameTmp: fileNameTmp,
-								    			createDate: new Date()
+								    			created: new Date()
 								    		}];
 								        }else{
+								        	if(!fileinfo.isLive){
+									        	var i=0;
+									        	___.each(fileinfo.versions,function(value, key){
+									        		log.debug("___.each(fileinfo.versions value:",value);
+									        		fileinfo.versions[i].deleted = true;
+									        		i++;
+									        	});
+									        	fileinfo.isLive = true;
+								        	}
 								        	fileinfo.versions.unshift({
 								    			filenameTmp: fileNameTmp,
-								    			createDate: new Date()
+								    			created: new Date()
 								    		});
 								        }
-								        //contact.status = request.status;
-								        //myversions = readingDBResult.versions;
 							   			
 								        //log.debug("writeToDB fileinfo: \n",util.inspect(fileinfo, { showHidden: true, depth: null }));
 

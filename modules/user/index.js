@@ -51,7 +51,6 @@ module.exports = {
                 TokenController.create(user.id,function(mytoken){
                     //console.dir(mytoken);
                     callback(null,{"setHeader": {"accessToken": mytoken}, "writeHead":200});
-                    
                 });
             });
             
@@ -67,7 +66,6 @@ module.exports = {
                 var tokenConfirm = (result === 1)? "token removed" : "token not removed";
                 log.info("user %s has logged out and %s",logoutRef.username, tokenConfirm);
                 callback(null,{"writeHead":200});
-                
             });
         });
     },
@@ -75,7 +73,6 @@ module.exports = {
         Token.findOne({accessToken: token}).populate('user').exec(function (err, accessToken) {
           if (err) log.error(err);
           callback(err,accessToken.user);
-          //console.dir(accessToken);
         });
     }
 }

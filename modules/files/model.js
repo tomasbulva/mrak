@@ -14,6 +14,11 @@ var fileSchema   = new Schema({
 			type: String,
 			required: true
 		},
+		isLive:{
+			type: Boolean,
+			required: true,
+			default: true	
+		},
 		users: {
 			owner: {
 				type: Schema.Types.ObjectId,
@@ -28,12 +33,16 @@ var fileSchema   = new Schema({
 		versions: [{
 			filenameTmp: {
 				type: String,
-				unique: true,
 				required: true
 			},
-			createDate: {
+			created: {
 				type: Date,
 				required: true 	
+			},
+			deleted: {
+				type: Boolean,
+				required: true,
+				default: false
 			}
 		}],
 		meta: {

@@ -1,8 +1,8 @@
 {
-    "https-port" : 8080,
+    "https-port" : 8081,
     "http-port" : 8070,
     "security": {
-        "tokenLife" : 2216000
+        "tokenLife" : 92216000
     },
     "mongoose": {
         "uri": "mongodb://localhost/mrak0"
