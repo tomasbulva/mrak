@@ -6,6 +6,10 @@ var fileSchema   = new Schema({
 			type: String,
 			required: true
 		},
+		type: { // file or folder
+			type: String,
+			required: true
+		},
 		filePath: {
 			type: String,
 			required: true

@@ -111,6 +111,87 @@ module.exports = {
 			}
 		});
     },
+    createFolder: function(req, callback){
+    	var currUserId;
+    	var filedescription;
+
+    	async.series([
+    		function getUserId(cb){
+	    		userController.getUserByToken(req.headers.accesstoken, function(err,currUser){
+	    			log.debug("getUserId: ", currUser.id);
+					currUserId = currUser.id;
+					cb();
+	    		});
+	    	},
+	    	function collectInfo(cb){
+	    		// file model
+				filedescription = { 
+					filenameOrig: req.body.folderName,
+					type: "folder",
+					filePath: null,
+					virtualPath: req.body.folderLocation,
+					users: {
+						owner: currUserId,
+						sharee: null
+					},
+					meta: {
+						size: null,
+						mime: null,
+						publ: true, // this will depend on user preferences in future
+						hash: null,
+						ext: null
+					}
+					// created: auto populated [default: now]
+				}
+				cb();
+	    	},
+	    	function writeFolderToDB(cb){
+	    		var query = {
+					"filenameOrig": filedescription.filenameOrig, 
+					"virtualPath": filedescription.virtualPath,
+					"users.owner": currUserId
+				}
+
+				//log.debug("writeToDB query: \n",util.inspect(query, { showHidden: true, depth: null }));
+
+				Files.findOne(query, function folderRecordFindOneCb(err, fileinfo) {
+				    if(!err) {
+				    	// folder record doesn't exist yet, create new one
+				        if(!fileinfo) {
+							var fileinfo = new Files();
+							fileinfo = ___.extend(fileinfo,filedescription);
+							fileinfo.versions = [{
+				    			filenameTmp: null,
+				    			created: new Date()
+				    		}];
+				        }else{
+				        	if(!fileinfo.isLive){
+					        	fileinfo.isLive = true;
+				        	}
+				        }
+				        fileinfo.save(function writeFolderUpdateCb(err) {
+				            if(!err) {
+				                log.debug("writeFolderToDB writeFolderUpdateCb success");
+				                cb();
+				            }
+				            else {
+				                log.debug("writeFolderToDB writeFolderUpdateCb error: \n", err);
+				            }
+				        });
+				    }else{
+				    	log.error("writeFolderToDB writeFolderUpdateCb file record lookup error: \n", err);
+				    	cb();
+				    }
+				});
+	    	}
+	    ],
+	    function onFolderCreateEnd(err,result){
+        	//log.debug("onFileCreateEnd: \n",util.inspect(result, { showHidden: true, depth: null }));
+        	log.debug("onFolderCreateEnd finished");
+        	callback(err,filedescription);
+        });
+		
+    },
     create: function(req, callback) {
      	log.debug('create file object reached');
      	var fstream;
@@ -264,58 +345,56 @@ module.exports = {
 						});
 			    	},
 			    	function writeToDB(cb){
-					    		var query = {
-					    			"filenameOrig": origFileName, 
-					    			"virtualPath": virtualPathTmp,
-					    			"users.owner": currUserId
-					    		}
+			    		var query = {
+			    			"filenameOrig": origFileName, 
+			    			"virtualPath": virtualPathTmp,
+			    			"users.owner": currUserId
+			    		}
 
-					    		//log.debug("writeToDB query: \n",util.inspect(query, { showHidden: true, depth: null }));
+			    		//log.debug("writeToDB query: \n",util.inspect(query, { showHidden: true, depth: null }));
 
-					    		Files.findOne(query, function fileRecordFindOneCb(err, fileinfo) {
-								    if(!err) {
+			    		Files.findOne(query, function fileRecordFindOneCb(err, fileinfo) {
+						    if(!err) {
 
-								    	// file record doesn't exist yet, create new one
-								        if(!fileinfo) {
-											var fileinfo = new Files();
-					    					fileinfo = ___.extend(fileinfo,filedescription);
-					    					fileinfo.versions = [{
-								    			filenameTmp: fileNameTmp,
-								    			created: new Date()
-								    		}];
-								        }else{
-								        	if(!fileinfo.isLive){
-									        	var i=0;
-									        	___.each(fileinfo.versions,function(value, key){
-									        		log.debug("___.each(fileinfo.versions value:",value);
-									        		fileinfo.versions[i].deleted = true;
-									        		i++;
-									        	});
-									        	fileinfo.isLive = true;
-								        	}
-								        	fileinfo.versions.unshift({
-								    			filenameTmp: fileNameTmp,
-								    			created: new Date()
-								    		});
-								        }
-							   			
-								        //log.debug("writeToDB fileinfo: \n",util.inspect(fileinfo, { showHidden: true, depth: null }));
+						    	// file record doesn't exist yet, create new one
+						        if(!fileinfo) {
+									var fileinfo = new Files();
+			    					fileinfo = ___.extend(fileinfo,filedescription);
+			    					fileinfo.versions = [{
+						    			filenameTmp: fileNameTmp,
+						    			created: new Date()
+						    		}];
+						        }else{
+						        	if(!fileinfo.isLive){
+							        	var i=0;
+							        	___.each(fileinfo.versions,function(value, key){
+							        		log.debug("___.each(fileinfo.versions value:",value);
+							        		fileinfo.versions[i].deleted = true;
+							        		i++;
+							        	});
+							        	fileinfo.isLive = true;
+						        	}
+						        	fileinfo.versions.unshift({
+						    			filenameTmp: fileNameTmp,
+						    			created: new Date()
+						    		});
+						        }
+					   			
+						        //log.debug("writeToDB fileinfo: \n",util.inspect(fileinfo, { showHidden: true, depth: null }));
 
-								        fileinfo.save(function writeFileUpdateCb(err) {
-								            if(!err) {
-								                log.debug("writeToDB writeFileUpdateCb success");
-								                cb();
-								            }
-								            else {
-								                log.debug("writeToDB writeFileUpdateCb error: \n", err);
-								            }
-								        });
-								    }else{
-								    	log.error("writeToDB writeFileUpdateCb file record lookup error: \n", err);
-								    }
-								});
-					    	// }
-			    		// ],cb)
+						        fileinfo.save(function writeFileUpdateCb(err) {
+						            if(!err) {
+						                log.debug("writeToDB writeFileUpdateCb success");
+						                cb();
+						            }
+						            else {
+						                log.debug("writeToDB writeFileUpdateCb error: \n", err);
+						            }
+						        });
+						    }else{
+						    	log.error("writeToDB writeFileUpdateCb file record lookup error: \n", err);
+						    }
+						});
 			    	}
             	],cb);
             }],

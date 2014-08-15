@@ -9,8 +9,10 @@ API overview
 
 * Files
 +    /files/upload                 POST     // upload file by current logged in user
--    /files/make                   POST     // create folders
--    /files/search/                POST     // file search
+-    /files/move                   POST     // move file in or out of folders
++    /files/folder                 POST     // create folder/s
+-    /files/rename                 POST     // create folder/s
+-    /files/search                 POST     // file search
 +    /files/list                   GET      // list all files
 +    /files/:id                    GET      // download file by ID
 +    /files/:id                    DELETE   // delete file -> just change of dbFlag flag
@@ -61,6 +63,16 @@ app.post('/files/upload', auth.authorise, function(req, res, next) {
         //log.debug("api/index > files upload success ", file);
         utilities.globalHeaders(res); //X-Powered-By
         res.json(files); // return user json if ok
+    });
+});
+
+app.post('/files/folder', auth.authorise, function(req, res, next) {
+    log.debug("api/index > files create folder");
+    files.createFolder(req, function createFolderCb(err, folder) {
+        if(err) log.error("api/index > files create folder Error ", err);
+        log.debug("api/index > files create folder success ", folder);
+        utilities.globalHeaders(res); //X-Powered-By
+        res.json(folder); // return user json if ok
     });
 });
 
@@ -142,7 +154,7 @@ app.get('/user/login', function(req, res, next){
     user.login(req, res, function loginUserCb(err, user) {
         if(err) log.error("api/index > user login Error", err);
         log.info('user %s is logged in', req.query.user);
-        console.dir(user);
+        //console.dir(user);
         utilities.globalHeaders(res); //X-Powered-By
         for(headerType in user){
             if(headerType == "writeHead"){
