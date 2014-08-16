@@ -4,6 +4,7 @@ var TokenController = require('../accesstoken');
 var Token           = require('../accesstoken/model');
 var utilities       = require('../utilities');
 var log             = utilities.iLog(module);
+var util            = require('util');
 
 
 module.exports = {
@@ -16,16 +17,16 @@ module.exports = {
 
         var userinfo = new User();
         
-        userinfo.firstName = null;
-        userinfo.middleName = null;
-        userinfo.lastName = null;
-        userinfo.email = null;
+        userinfo.firstName = req.body.firstname;
+        userinfo.middleName = req.body.middlename;
+        userinfo.lastName = req.body.lastname;
+        userinfo.email = req.body.email;
         userinfo.username = req.body.username;
         userinfo.password = req.body.password;
 
         userinfo.save(function(err, user) {
             if(err) log.error(err);
-            log.info("New user - %s:%s - userId %s - id %s",user.username,user.password,user.userId,user.id);
+            log.info("New user ",util.inspect(user, { showHidden: true, depth: null }));
             callback(err, user);
         });
     },

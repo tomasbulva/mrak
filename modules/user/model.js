@@ -1,21 +1,28 @@
-var crypto          = require('crypto');
-var utilities       = require('../utilities');
-var log             = utilities.iLog(module);
-var config          = require('../config');
+var crypto      = require('crypto');
+var utilities   = require('../utilities');
+var Validations = require('./validations.js');
+var log         = utilities.iLog(module);
+var config      = require('../config');
 
-var mongoose        = require('mongoose');
-var Schema          = mongoose.Schema;
+var mongoose    = require('mongoose');
+var Schema      = mongoose.Schema;
 
 
-var userSchema = new Schema({
+var userSchema  = new Schema({
     firstName: String,
     middleName: String,
     lastName: String,
-    email: String,
+    email: {
+        type: String,
+        required: 'email is required', 
+        unique: true, 
+        trim: true, 
+        lowercase: true
+    },
     username: {
         type: String,
         unique: true,
-        required: true
+        required: 'Username is required'
     },
     hashedPassword: {
         type: String,
@@ -34,10 +41,12 @@ var userSchema = new Schema({
     }
 });
 
-userSchema.path('email').validate(function (email) {
-   var emailRegex = /^([\w-\.]+@([\w-]+\.)+[\w-]{2,4})?$/;
-   return emailRegex.test(email);
-}, 'The e-mail field cannot be empty.');
+//console.dir(userSchema);
+
+userSchema.path('username').validate( Validations.uniqueFieldInsensitive('User', 'username' ), 'unique' )
+userSchema.path('email').validate( Validations.uniqueFieldInsensitive('User', 'email' ), 'unique' )
+userSchema.path('email').validate( Validations.emailFormat, 'format' )
+//userSchema.path('hashedPassword').validate( Validations.cannotBeEmpty, 'hashedPassword' )
 
 userSchema.methods.encryptPassword = function(password) {
     //thesalt = (salt !== undefined) ? salt : this.salt;
