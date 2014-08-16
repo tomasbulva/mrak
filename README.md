@@ -1,9 +1,11 @@
 # API overview
-=========================
-\+ already build
-\- needs to be build
-\~ Future versions
-=========================
+
+|--------------------------|
+| \+ already build\        |
+| \- needs to be build\    |
+| \~ Future versions\      |
+|--------------------------|
+
 
 * Files
 +    /files/upload                 POST     // upload file by current logged in user
