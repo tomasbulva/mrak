@@ -48,7 +48,7 @@ state | API | method | description
 ### User
 signup
 ```
-curl -v --data "username=tom&password=1234&firstname=Tomas&lastname=Bulva&email=tom.bulva@gmail.com" http://localhost:8081/api/user/create
+curl -v --data "username=bob&password=1234&firstname=Robert&lastname=Kennedy&email=bob.kennedy@email.com" http://localhost:8081/api/user/create
 ```
 
 login
