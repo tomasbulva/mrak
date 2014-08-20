@@ -11,7 +11,8 @@ var utilities 		= require("../utilities");
 var log 			= utilities.iLog(module);
 
 module.exports = {
-    getList: function(req, callback) {
+    getList: function(req, res, next) {
+
         log.debug("file/index.js > getList");
         Files.find({}).populate('users.owner').exec(function findAllFilesCb(err,result){
         	if (err) log.error('findAllFilesCb error: \n',err);
@@ -33,13 +34,12 @@ module.exports = {
 	        		i++;
         		}
         	});
-
-        	callback(null,cleanResult);
+        	utilities.globalHeaders(res); //X-Powered-By
+        	res.json(cleanResult);
+        	//callback(null,cleanResult);
         });
     },
-    getFile: function(req, callback){
-    	//log.debug("file/index.js > getFile");
-    	//log.debug("req.params.id \n",util.inspect(req.params.id, { showHidden: true, depth: null }))
+    getFile: function(req, res, next){
     	var fileName;
 		var fileNameOrig;
 		var filePath;
@@ -57,7 +57,8 @@ module.exports = {
 					    		filePath = result.filePath;
 					    		wholeFilePath = path.join(filePath, fileName);
 					    	}else{
-				    			callback({"writeHead":404},null, null);
+            					res.writeHead(404);
+            					res.end();
 				    		}
 	    				});
 	    			}else{
@@ -66,58 +67,70 @@ module.exports = {
 				    		fileNameOrig = result.filenameOrig;
 				    		filePath = result.filePath;
 				    		wholeFilePath = path.join(filePath, fileName);    				
+				    		
+				    		log.debug("wholeFilePath",wholeFilePath);
+				    		res.download(wholeFilePath, fileNameOrig);
+	    					//res.end();
+				    	
 				    	}else{
-			    			callback({"writeHead":404},null, null);
+				    		res.writeHead(404);
+				    		res.end();
 			    		}
 	    			}
-
-	    			callback(false,wholeFilePath, fileNameOrig);
     		}else{
     			log.error('getFile (by id: %s) error %s: ',req.params.id,err);
     		}
-
+    		
     	}); //findOne end
 
     },
-    deleteFile: function(req, callback) {
+    deleteFile: function(req, res, next) {
+
     	Files.findOne({"versions._id": req.params.id},function(err,fileinfo){
 			//log.debug("Files.findOne result \n",util.inspect(result.versions[0].filenameTmp, { showHidden: true, depth: null }));
-			
 			if(!err){
 	    			if(!fileinfo){
 	    				Files.findOne({"_id": req.params.id},function(err,fileinfo){
 	    					if(fileinfo.isLive){
 		    					fileinfo.isLive = false;
 					    	}else{
-				    			callback(false, {"writeHead":404});
+				    			res.writeHead(404);
+				    			res.end();
+				    			return;
 				    		}
 	    				});
 	    			}else{
 	    				if(fileinfo.isLive){
 							 fileinfo.isLive = false;			
 				    	}else{
-			    			callback(false, {"writeHead":404});
+			    			res.writeHead(404);
+			    			res.end();
+			    			return;
 			    		}
 	    			}
 	    			fileinfo.save(function fileDeleteUpdateCb(err){
 	    				if(!err) {
 			                log.debug("deleteFile fileDeleteUpdateCb success");
-			                callback(false,{"writeHead":200});
+			                res.writeHead(200);
+			                res.end();
 			            }
 	    			});
 	    			
 			}else{
 				log.error('getFile (by id: %s) error %s: ',req.params.id,err);
 			}
+			
 		});
     },
-    createFolder: function(req, callback){
+    createFolder: function(req, res, next){
+
     	var currUserId;
-    	var filedescription;
+    	var folderName;
+    	var folderPath;
 
     	async.series([
     		function getUserId(cb){
-	    		userController.getUserByToken(req.headers.accesstoken, function(err,currUser){
+	    		userController.getUserByToken(req.headers.accessToken, function(err,currUser){
 	    			log.debug("getUserId: ", currUser.id);
 					currUserId = currUser.id;
 					cb();
@@ -192,7 +205,9 @@ module.exports = {
         });
 		
     },
-    create: function(req, callback) {
+    create: function(req, res, next) {
+
+
      	log.debug('create file object reached');
      	var fstream;
      	var filedescription;
@@ -208,12 +223,13 @@ module.exports = {
      	var wholeFilePath;
      	var fileSize;
      	var finalBuffer;
-     	var virtualPathTmp = 'user/';
+     	var virtualPathTmp = '/';
 
-     	var finalResult;
+     	var currFile;
 
 	    async.series([
 	    	function getUserId(cb){
+	    		log.debug("req.headers", util.inspect(req.headers, { showHidden: true, depth: null }));
 	    		userController.getUserByToken(req.headers.accesstoken, function(err,currUser){
 	    			log.debug("getUserId: ", currUser.id);
 					currUserId = currUser.id;
@@ -385,6 +401,7 @@ module.exports = {
 						        fileinfo.save(function writeFileUpdateCb(err) {
 						            if(!err) {
 						                log.debug("writeToDB writeFileUpdateCb success");
+						                currFile = fileinfo;
 						                cb();
 						            }
 						            else {
@@ -400,8 +417,12 @@ module.exports = {
             }],
             function onFileCreateEnd(err,result){
             	//log.debug("onFileCreateEnd: \n",util.inspect(result, { showHidden: true, depth: null }));
-            	log.debug("onFileCreateEnd success")
-            	callback(err,filedescription);
+            	log.debug("onFileCreateEnd success");
+            	if(err) log.error("api/index > files upload Error ", err);
+            	//callback(err,filedescription);
+
+            	utilities.globalHeaders(res); //X-Powered-By
+        		res.json(currFile); // return user json if ok
             }
 	    );
     }    
