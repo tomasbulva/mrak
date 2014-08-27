@@ -12,14 +12,14 @@
 ### Files
 state | API           | method | description
    ---|---------------|--------|---
-\+    | /files/upload | POST   | upload file by current logged in user 
-\-    | /files/move   | POST   | move file in or out of folders
-\+    | /files/folder | POST   | create folder/s
-\-    | /files/rename | POST   | create folder/s
-\-    | /files/search | POST   | file search
-\+    | /files/list   | GET    | list all files
-\+    | /files/:id    | GET    | download file by ID
-\+    | /files/:id    | DELETE | delete file -> just change of db flag
+\+    | /file/upload | POST   | upload file by current logged in user 
+\-    | /file/move   | POST   | move file in or out of folders
+\+    | /file/folder | POST   | create folder/s
+\-    | /file/rename | POST   | create folder/s
+\-    | /file/search | POST   | file search
+\+    | /file/list   | GET    | list all files
+\+    | /file/:id    | GET    | download file by ID
+\+    | /file/:id    | DELETE | delete file -> just change of db flag
 
 ### Users
 state | API | method | description
@@ -70,22 +70,22 @@ curl -v --header "accessToken:=login-genrated-token=" "http://localhost:8080/api
 ### Files
 upload
 ```
-curl -i --header "accessToken:=login-genrated-token=" -F name=file -F filedata=@file.jpg http://localhost:8081/api/files/upload
+curl -i --header "accessToken:=login-genrated-token=" -F name=file -F filedata=@file.jpg http://localhost:8081/api/file/upload
 ```
 
 download
 ```
-curl -i --header "accessToken:=login-genrated-token=" http://localhost:8081/api/files/000000000000000000000000
+curl -i --header "accessToken:=login-genrated-token=" http://localhost:8081/api/file/000000000000000000000000
 ```
 
 delete
 ```
-curl -i --header "accessToken:=login-genrated-token=" -X DELETE http://localhost:8081/api/files/000000000000000000000000
+curl -i --header "accessToken:=login-genrated-token=" -X DELETE http://localhost:8081/api/file/000000000000000000000000
 ```
 
 list all files owned by curr user
 ```
-curl -i --header "accessToken:=login-genrated-token=" http://localhost:8081/api/files/list
+curl -i --header "accessToken:=login-genrated-token=" http://localhost:8081/api/file/list
 ```
 
 

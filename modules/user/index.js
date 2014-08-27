@@ -80,7 +80,7 @@ module.exports = {
     getUserByToken: function(token,callback){
         Token.findOne({accessToken: token}).populate('user').exec(function (err, accessToken) {
           if (err) log.error(err);
-          log.debug("accessToken.user",accessToken.user);
+          //log.debug("accessToken.user",accessToken.user);
           callback(err,accessToken.user);
         });
     },

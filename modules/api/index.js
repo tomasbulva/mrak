@@ -6,18 +6,26 @@
 
 * Files
 
-+ /files/upload     POST        upload file by current logged in user 
-- /files/move       POST        move file in or out of folders
-+ /files/folder     POST        create folder/s
-- /files/rename     POST        create folder/s
-- /files/search     POST        file search
-+ /files/list       GET         list all files
-+ /files/:id        GET         download file by ID
-+ /files/:id        DELETE      delete file -> just change of db flag
++ /file/upload     POST        upload file by current logged in user 
+- /file/move       POST        move file in or out of folders
+- /file/rename     POST        rename folder/s
+- /file/search     POST        file search
++ /file/list       GET         list all files
++ /file/:id        GET         download file by ID
++ /file/:id        DELETE      delete file -> just change of db flag
+
+* Folders
+
+- /folder/create     POST        create folder -> path 
+- /folder/move       POST        move folder -> id, path
+- /folder/rename     POST        rename folder -> id, new_name
+- /folder/tree       GET         return complete folder tree
+- /folder/:id        GET         folder info returns -> content, size, owner, sharee
+- /folder/:id        DELETE      delete folder
 
 * Users
 
-+ /user/create      POST        user sign up
++ /user/create      POST        user sign up (needs foolproof for no post data passing)
 + /user/login       GET         user login -> returns accessToken in header
 + /user/logout      GET         user logout -> deletes accessToken reference from DB 
 + /user/inf         GET         logged-in/current user info
@@ -34,6 +42,7 @@
 
 
 var files 		= require("../files");
+var folders     = require("../folders");
 var user 		= require("../user");
 var auth        = require('../auth');
 var busboy      = require('connect-busboy');
@@ -50,12 +59,24 @@ var app 		= module.exports = express(); // we export new express app here!
  *   Files
  *
  */
-app.use('/files/upload', busboy()); 
-app.post('/files/upload', auth.authorise, files.create); 
-// app.post('/files/folder', auth.authorise, files.createFolder); // --
-app.get('/files/list', auth.authorise, files.getList); 
-app.get('/files/:id', auth.authorise, files.getFile); 
-app.delete('/files/:id', auth.authorise, files.deleteFile); 
+app.use('/file/upload', busboy()); 
+app.post('/file/upload', auth.authorise, files.create); 
+app.get('/file/list', auth.authorise, files.getList); 
+app.get('/file/:id', auth.authorise, files.getFile); 
+app.delete('/file/:id', auth.authorise, files.deleteFile); 
+
+/*
+ *
+ *   Folders
+ *
+ */
+app.post('/folder/create', auth.authorise, folders.create); //     POST        create folder -> path 
+app.post('/folder/move', auth.authorise, folders.move);     //     POST        move folder -> id, path
+app.post('/folder/rename', auth.authorise, folders.rename); //     POST        rename folder -> id, new_name
+app.get('/folder/tree', auth.authorise, folders.tree);      //     GET         return complete folder tree
+app.get('/folder/:id', auth.authorise, folders.getFolder);  //     GET         folder info returns -> content, size, owner, sharee
+app.delete('/folder/:id', auth.authorise, folders.delete); 
+
 
 /*
  *

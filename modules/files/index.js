@@ -122,89 +122,6 @@ module.exports = {
 			
 		});
     },
-    createFolder: function(req, res, next){
-
-    	var currUserId;
-    	var folderName;
-    	var folderPath;
-
-    	async.series([
-    		function getUserId(cb){
-	    		userController.getUserByToken(req.headers.accessToken, function(err,currUser){
-	    			log.debug("getUserId: ", currUser.id);
-					currUserId = currUser.id;
-					cb();
-	    		});
-	    	},
-	    	function collectInfo(cb){
-	    		// file model
-				filedescription = { 
-					filenameOrig: req.body.folderName,
-					type: "folder",
-					filePath: null,
-					virtualPath: req.body.folderLocation,
-					users: {
-						owner: currUserId,
-						sharee: null
-					},
-					meta: {
-						size: null,
-						mime: null,
-						publ: true, // this will depend on user preferences in future
-						hash: null,
-						ext: null
-					}
-					// created: auto populated [default: now]
-				}
-				cb();
-	    	},
-	    	function writeFolderToDB(cb){
-	    		var query = {
-					"filenameOrig": filedescription.filenameOrig, 
-					"virtualPath": filedescription.virtualPath,
-					"users.owner": currUserId
-				}
-
-				//log.debug("writeToDB query: \n",util.inspect(query, { showHidden: true, depth: null }));
-
-				Files.findOne(query, function folderRecordFindOneCb(err, fileinfo) {
-				    if(!err) {
-				    	// folder record doesn't exist yet, create new one
-				        if(!fileinfo) {
-							var fileinfo = new Files();
-							fileinfo = ___.extend(fileinfo,filedescription);
-							fileinfo.versions = [{
-				    			filenameTmp: null,
-				    			created: new Date()
-				    		}];
-				        }else{
-				        	if(!fileinfo.isLive){
-					        	fileinfo.isLive = true;
-				        	}
-				        }
-				        fileinfo.save(function writeFolderUpdateCb(err) {
-				            if(!err) {
-				                log.debug("writeFolderToDB writeFolderUpdateCb success");
-				                cb();
-				            }
-				            else {
-				                log.debug("writeFolderToDB writeFolderUpdateCb error: \n", err);
-				            }
-				        });
-				    }else{
-				    	log.error("writeFolderToDB writeFolderUpdateCb file record lookup error: \n", err);
-				    	cb();
-				    }
-				});
-	    	}
-	    ],
-	    function onFolderCreateEnd(err,result){
-        	//log.debug("onFileCreateEnd: \n",util.inspect(result, { showHidden: true, depth: null }));
-        	log.debug("onFolderCreateEnd finished");
-        	callback(err,filedescription);
-        });
-		
-    },
     create: function(req, res, next) {
 
 
@@ -421,7 +338,7 @@ module.exports = {
             	if(err) log.error("api/index > files upload Error ", err);
             	//callback(err,filedescription);
 
-            	utilities.globalHeaders(res); //X-Powered-By
+            	//utilities.globalHeaders(res); //X-Powered-By
         		res.json(currFile); // return user json if ok
             }
 	    );
