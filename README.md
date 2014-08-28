@@ -10,16 +10,27 @@
 
 
 ### Files
-state | API           | method | description
-   ---|---------------|--------|---
-\+    | /file/upload | POST   | upload file by current logged in user 
-\-    | /file/move   | POST   | move file in or out of folders
-\+    | /file/folder | POST   | create folder/s
-\-    | /file/rename | POST   | create folder/s
-\-    | /file/search | POST   | file search
-\+    | /file/list   | GET    | list all files
-\+    | /file/:id    | GET    | download file by ID
-\+    | /file/:id    | DELETE | delete file -> just change of db flag
+state | API           | method     | description
+   ---|---------------|------------|---
+\+    | /file/upload  |   POST     |   upload file by current logged in user 
+\-    | /file/move    |   POST     |   move file in or out of folders
+\-    | /file/rename  |   POST     |   rename folder/s
+\-    | /file/search  |   POST     |   file search
+\+    | /file/list    |   GET      |   list all files
+\+    | /file/:id     |   GET      |   download file by ID
+\+    | /file/:id     |   DELETE   |   delete file -> just change of db flag
+
+
+### Folders
+state | API              | method    | description
+   ---|------------------|-----------|---
+\+ 	  | /folder/create   |  POST     |   create folder -> path 
+\+    | /folder/move     |  POST     |   move folder -> id, path
+\+    | /folder/rename   |  POST     |   rename folder -> id, new_name
+\-    | /folder/tree     |  GET      |   return complete folder tree
+\+    | /folder/:id      |  GET      |   folder info returns -> content, size, owner, sharee
+\+    | /folder/:id      |  DELETE   |   delete folder
+
 
 ### Users
 state | API | method | description

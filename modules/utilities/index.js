@@ -4,7 +4,7 @@ var winston 	= require('winston');
 var express    	= require('express');
 var moment		= require('moment');
 var capn		= require('./capn');
-var util 			= require('util');
+var util 		= require('util');
 
 module.exports = {
 	getFilesizeInBytes: function (filename) {

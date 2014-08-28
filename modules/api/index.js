@@ -16,12 +16,12 @@
 
 * Folders
 
-- /folder/create     POST        create folder -> path 
-- /folder/move       POST        move folder -> id, path
-- /folder/rename     POST        rename folder -> id, new_name
++ /folder/create     POST        create folder -> path 
++ /folder/move       POST        move folder -> id, path
++ /folder/rename     POST        rename folder -> id, new_name
 - /folder/tree       GET         return complete folder tree
-- /folder/:id        GET         folder info returns -> content, size, owner, sharee
-- /folder/:id        DELETE      delete folder
++ /folder/:id        GET         folder info returns -> content, size, owner, sharee
++ /folder/:id        DELETE      delete folder
 
 * Users
 
