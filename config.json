@@ -9,7 +9,13 @@
     },
     "filesystem": {
     	"system": "local",
-    	"uploadDir": "uploads"
+    	"uploadDir": "uploads",
+        "tempDir": "tmp"
+    },
+    "s3": {
+        "enabled" : false,
+        "secret" : "",
+        "key" : ""
     },
     "versions": {
     	"basic": 10,

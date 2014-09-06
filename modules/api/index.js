@@ -8,7 +8,7 @@
 
 + /file/upload     POST        upload file by current logged in user 
 - /file/move       POST        move file in or out of folders
-- /file/rename     POST        rename folder/s
+- /file/rename     POST        rename file
 - /file/search     POST        file search
 + /file/list       GET         list all files
 + /file/:id        GET         download file by ID
@@ -34,8 +34,9 @@
 
 * Share
 
-- /share/create     POST        create share record ID accepts (fileID, userID, [email], [password])
-- /share/:file_id   DELETE      cancel sharing (will delete the file from all sharees if they have copy in theyir accounts)
+- /create     POST        create share record ID accepts (fileID, userID, [email], [password])
+- /:file_id   GET         get shared file/folder
+- /:file_id   DELETE      cancel sharing (will delete the file from all sharees if they have copy in theyir accounts)
 
 */
 
@@ -43,12 +44,10 @@
 
 var files 		= require("../files");
 var folders     = require("../folders");
+var share 		= require("../share");
 var user 		= require("../user");
 var auth        = require('../auth');
 var busboy      = require('connect-busboy');
-var utilities 	= require("../utilities");
-var log 		= utilities.iLog(module);
-var util        = require('util');
 
 
 var express 	= require("express");
@@ -88,6 +87,11 @@ app.get('/user/login', user.login);
 app.get('/user/logout', auth.authorise, user.logout); 
 app.get('/user/inf', auth.authorise, user.currUserInfo); 
 
-
+/*
+ *
+ *   Share
+ *
+ */ 
+app.post('/share/create', auth.authorise, share.create);
 
 

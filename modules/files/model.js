@@ -6,16 +6,13 @@ var fileSchema   = new Schema({
 			type: String,
 			required: true
 		},
-		type: { // file or folder
-			type: String,
-			required: true
-		},
 		filePath: {
 			type: String,
 			required: true
 		},
-		virtualPath: {
-			type: String,
+		parent: {
+			type: Schema.Types.ObjectId,
+		    ref: 'Folder',
 			required: true
 		},
 		isLive:{

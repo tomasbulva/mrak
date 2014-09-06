@@ -21,6 +21,10 @@ module.exports = {
 		pathBase = config.get('filesystem:uploadDir');
 		return path.join(global.ServerRootDir+'/'+pathBase+'/'+currUserID);
 	},
+	currUserTmpDir: function(currUserID){
+		pathBase = config.get('filesystem:tempDir');
+		return path.join(global.ServerRootDir+'/'+pathBase+'/'+currUserID);
+	},
 	currFileDir: function(currUserID,currFileNameOrig){
 		pathBase = config.get('filesystem:uploadDir');
 		return path.join(global.ServerRootDir+'/'+pathBase+'/'+currUserID+'/'+currFileNameOrig);
@@ -45,41 +49,4 @@ module.exports = {
 		var path = module.exports.currFileDir(currUserID,currFileNameOrig);
 		fs.mkdir(path,cb);
 	}
-	// ,
-	// currFileLogistics: function(currUserID,currFileNameOrig,callback){
-	// 	// Set of tests and operations to write each file.
-	// 	var m = module.exports;
-
-	// 	async.series([
-	// 		function(cb){
-	// 			if(!m.currUserDirCheck(currUserID,cb)){
-	// 				log.debug("User directory %s doesn't exist we'll try to create it", currUserID);
-	// 				m.currUserDirCreate(currUserID,cb);
-	// 				cb();
-	// 			}
-	// 			else{
-	// 				log.debug("User directory %s exists", currUserID);
-	// 				cb();
-	// 			}
-	// 		},
-	// 		function(cb){
-	// 			if(!m.currFileCheck(currUserID,currFileNameOrig,cb)){
-	// 				log.debug("File directory %s doesn't exist we'll try to create it",currFileNameOrig);
-	// 				m.currFileDirCreate(currUserID,currFileNameOrig,cb);
-	// 				cb();
-	// 			}else{
-	// 				log.debug("File directory %s exists",currFileNameOrig);
-	// 				cb();
-	// 			}
-	// 		}],
-	// 		function(err){
-	// 			//finishing the series
-	// 			//if(err) log.error(err);
-
-	// 			var path = m.currFileDir(currUserID,currFileNameOrig);
-	// 			log.info("User and File directory %s is created",path);
-	// 			callback(err,path);
-	// 		});
-	// }
-
 }

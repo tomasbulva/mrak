@@ -4,11 +4,13 @@ var crypto 			= require('crypto');
 var async 			= require('async');
 var ___ 			= require("underscore");
 var util 			= require('util');
+var Folder 			= require("../folders/model");
 var Files 			= require("./model");
 var userController 	= require("../user");
 var fileLib      	= require('./lib');
 var utilities 		= require("../utilities");
 var log 			= utilities.iLog(module);
+var btfy 			= utilities.logDir;
 
 module.exports = {
     getList: function(req, res, next) {
@@ -56,6 +58,7 @@ module.exports = {
 					    		fileNameOrig = result.filenameOrig;
 					    		filePath = result.filePath;
 					    		wholeFilePath = path.join(filePath, fileName);
+					    		res.download(wholeFilePath, fileNameOrig);
 					    	}else{
             					res.writeHead(404);
             					res.end();
@@ -140,7 +143,7 @@ module.exports = {
      	var wholeFilePath;
      	var fileSize;
      	var finalBuffer;
-     	var virtualPathTmp = '/';
+     	var parent;
 
      	var currFile;
 
@@ -182,8 +185,19 @@ module.exports = {
 						theMimeType = mimeType;
 						origFileName = filename;
 						theFile = file;
-						cb();
 					});
+				});
+
+				req.busboy.on('field', function retrieveAdditionalInfoCb(fieldname, val) {
+				     log.debug("fieldname: %s, val: %s",fieldname, val);
+				     if(fieldname === "parent"){
+				     	parent = val;
+				     }
+				     
+				});
+
+				req.busboy.on('finish', function(){
+					cb();
 				});
 	    	},
 	    	function createFileStruct(cb){
@@ -239,20 +253,19 @@ module.exports = {
 
 	    		// file model
 				filedescription = { 
-					filenameOrig: origFileName,
-					type: "file",
-					filePath: structPath,
-					virtualPath: virtualPathTmp,
-					users: {
-						owner: currUserId,
-						sharee: null
+					"filenameOrig": origFileName,
+					"filePath": structPath,
+					"parent": parent,
+					"users": {
+						"owner": currUserId,
+						"sharee": null
 					},
-					meta: {
-						size: fileSize,
-						mime: theMimeType,
-						publ: true, // this will depend on user preferences in future
-						hash: finalHash,
-						ext: fileExt
+					"meta": {
+						"size": fileSize,
+						"mime": theMimeType,
+						"publ": true, // this will depend on user preferences in future
+						"hash": finalHash,
+						"ext": fileExt
 					}
 					// created: auto populated [default: now]
 				}
@@ -277,10 +290,10 @@ module.exports = {
 						    }
 						});
 			    	},
-			    	function writeToDB(cb){
+			    	function writeToFileDB(cb){
 			    		var query = {
 			    			"filenameOrig": origFileName, 
-			    			"virtualPath": virtualPathTmp,
+			    			"parent": parent,
 			    			"users.owner": currUserId
 			    		}
 
@@ -329,9 +342,16 @@ module.exports = {
 						    	log.error("writeToDB writeFileUpdateCb file record lookup error: \n", err);
 						    }
 						});
-			    	}
-            	],cb);
-            }],
+			    }],cb);
+            },
+	    	function writeToFoldersDB(cb){
+	    		log.debug("currFile: \n",btfy(currFile));
+	    		Folder.findByIdAndUpdate(currFile.parent, { $addToSet: { files: currFile._id }}, function updareFolderDBcb(err,folder){
+	    			if(!err) cb();
+	    			if(err) log.error("Folders DB update error in files/index.js \n", err);
+	    			log.debug("folder: \n",btfy(folder));
+	    		});
+	    	}],
             function onFileCreateEnd(err,result){
             	//log.debug("onFileCreateEnd: \n",util.inspect(result, { showHidden: true, depth: null }));
             	log.debug("onFileCreateEnd success");

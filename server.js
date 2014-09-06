@@ -30,14 +30,13 @@ var securityOptions = {
     requestCert: true
 };
 
-
 app.use(bodyParser.urlencoded({ extended: false }));
 
 mongoose.connect(config.get('mongoose:uri'));
 
-
 // mount all the applications
 app.use('/api', require("./modules/api"));
+app.use('/s', require("./modules/api/share"));
 
 
 // START THE SERVER
