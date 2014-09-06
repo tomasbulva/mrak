@@ -49,8 +49,8 @@ state | API | method | description
 \- | /share/:file_id | DELETE | cancel sharing (will delete the file from all sharees if they have copy in theyir accounts)
 
 
-8008313842
-------------
+
+---
 
 
 
