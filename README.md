@@ -103,3 +103,7 @@ curl -i --header "accessToken:=login-genrated-token=" http://localhost:8081/api/
 
 
 
+
+
+[![Bitdeli Badge](https://d2weczhvl823v0.cloudfront.net/tomasbulva/mrak/trend.png)](https://bitdeli.com/free "Bitdeli Badge")
+
